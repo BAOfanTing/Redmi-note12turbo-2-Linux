@@ -1,0 +1,16 @@
+[Unit]
+Description=Seat management daemon (for cage/wayland kiosk)
+Documentation=man:seatd(1)
+After=systemd-tmpfiles-setup.service
+Before=marble-dashboard-kiosk.service
+
+[Service]
+Type=simple
+# seatd 包只提供 /usr/bin/seatd，不带 systemd 单元，这里补一个
+# -g root: socket 属 root 组，cage 以 root 运行即可连上
+ExecStart=/usr/bin/seatd -g root -l info
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

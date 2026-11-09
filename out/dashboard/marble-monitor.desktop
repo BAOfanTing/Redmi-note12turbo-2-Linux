@@ -1,0 +1,14 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Marble 状态面板
+Name[en]=Marble Status
+GenericName=System Monitor
+Comment=CPU / 内存 / 温度 / 电池 / 网络 实时状态
+Comment[en]=Live CPU, memory, thermal, battery and network status
+Exec=/usr/local/bin/marble-monitor
+Icon=marble-monitor
+Terminal=false
+Categories=System;
+Keywords=status;monitor;dashboard;cpu;memory;battery;temperature;
+StartupNotify=true

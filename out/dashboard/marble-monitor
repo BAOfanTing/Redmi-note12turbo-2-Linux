@@ -1,0 +1,40 @@
+#!/bin/sh
+# ============================================================================
+# marble-monitor —— 以「独立应用窗口」打开状态面板
+#
+# 优先用 epiphany（GNOME Web / WebKitGTK）：它是纯 Wayland 客户端，
+# 不会像 chromium 那样去抢 DRM master（实测 chromium 会让 phoc 报
+# "Atomic commit failed: Resource busy"，屏幕直接黑掉）。
+#
+# 被 /usr/share/applications/marble-monitor.desktop 调用。
+# ============================================================================
+URL="file:///run/marble-dashboard/index.html"
+
+# 面板 HTML 还没生成时，先跑一次生成器
+if [ ! -s /run/marble-dashboard/index.html ]; then
+    /usr/local/bin/marble-dashboard.sh 2>/dev/null || true
+fi
+
+CACHE="${XDG_CACHE_HOME:-$HOME/.cache}/marble-app"
+mkdir -p "$CACHE" 2>/dev/null
+
+if command -v epiphany >/dev/null 2>&1; then
+    # 注：epiphany 的 --application-mode(-a) 在这个版本要求传 .desktop 文件，
+    # 直接给 URL 会报 "Invalid desktop file passed to --application-mode"。
+    # 所以用 --new-window（实测可用）。
+    exec epiphany --new-window "$URL" "$@"
+elif command -v chromium >/dev/null 2>&1; then
+    # 备选（注意：chromium 在 phosh 下可能抢 DRM，谨慎使用）
+    exec chromium \
+        --app="$URL" \
+        --ozone-platform=wayland \
+        --no-sandbox \
+        --no-first-run \
+        --noerrdialogs \
+        --disable-infobars \
+        --user-data-dir="$CACHE" \
+        "$@"
+else
+    echo "需要 epiphany 或 chromium： sudo apk add epiphany" >&2
+    exit 1
+fi

@@ -1,0 +1,38 @@
+# ---------------------------------------------------------------
+#  Redmi-note12turbo-2-Linux
+#  ASCII comments only (avoid encoding damage from tool rewrites)
+# ---------------------------------------------------------------
+
+# ---- secrets / private keys: NEVER commit ----
+secrets.sh
+!secrets.example.sh
+out/credentials.txt
+*.key
+*.pem
+id_rsa*
+
+# ---- device-unique data (IMEI / RF calibration) ----
+marble-backup/
+
+# ---- big binaries: distribute via Releases ----
+*.img
+*.simg
+*.apk
+*.zip
+*.msi
+*.tar.gz
+*.tar.xz
+
+# ---- build artifacts / logs / downloads ----
+logs/
+tmp/
+tools/
+scripts/*.log
+out/SHA256SUMS.txt
+
+# ---- OS junk ----
+Thumbs.db
+desktop.ini
+.DS_Store
+*.swp
+*~

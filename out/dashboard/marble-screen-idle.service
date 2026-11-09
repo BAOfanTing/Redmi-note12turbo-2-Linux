@@ -1,0 +1,21 @@
+[Unit]
+Description=Marble screen idle blanking (blank after idle, wake on any input)
+After=marble-dashboard.service
+Before=marble-dashboard-kiosk.service
+# 熄屏时如果 BLANK_MODE 含 kiosk，会 stop/start 本单元的下游，不能有 Requires
+
+[Service]
+Type=simple
+Environment=IDLE_SEC=120
+Environment=BLANK_MODE=backlight
+Environment=FALLBACK_BRIGHTNESS=45
+ExecStart=/usr/local/bin/marble-screen-idle.sh
+Restart=always
+RestartSec=5
+# 输入设备是可以被抢的，别让 systemd 限制它
+PrivateDevices=no
+ProtectSystem=no
+Nice=-5
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,46 @@
+[Unit]
+Description=Marble status dashboard - fullscreen kiosk on tty7
+After=marble-dashboard.service systemd-user-sessions.service
+Requires=marble-dashboard.service
+# 屏幕上的登录 shell 会和 DRM 抢资源，先停掉
+Conflicts=getty@tty7.service
+After=getty@tty7.service
+
+[Service]
+Type=simple
+StandardOutput=journal
+StandardError=journal
+
+# cage 必须有 XDG_RUNTIME_DIR（否则报 "XDG_RUNTIME_DIR is not set"）
+Environment=XDG_RUNTIME_DIR=/run/marble-dashboard/xdg
+# 没有 GPU 加速时也能渲染
+Environment=WLR_RENDERER_ALLOW_SOFTWARE=1
+# 说明：cage 会 open 所有 /dev/input/event*（见 /proc/<pid>/fd），
+# 但实测并未 EVIOCGRAB 独占，所以 marble-screen-idle.sh 用 dd 仍能读到电源键/触摸。
+# （试过 WLR_LIBINPUT_NO_DEVICES=1，cage 0.3.1 不认这个变量，无效，已去掉）
+
+ExecStartPre=/bin/mkdir -p /run/marble-dashboard/xdg
+ExecStartPre=/bin/chmod 700 /run/marble-dashboard/xdg
+
+# 路径在 Alpine 里是 /usr/sbin/（不是 /usr/bin/）
+# --no-sandbox 必须：服务以 root 跑，chromium 的 SUID sandbox 在 root 下不可用
+ExecStart=/usr/sbin/cage -- /usr/sbin/chromium \
+    --kiosk \
+    --no-sandbox \
+    --no-first-run \
+    --noerrdialogs \
+    --disable-infobars \
+    --disable-translate \
+    --disable-features=TranslateUI,Translate \
+    --disable-session-crashed-bubble \
+    --check-for-update-interval=31536000 \
+    --user-data-dir=/run/marble-dashboard/chromium \
+    file:///run/marble-dashboard/index.html
+
+Restart=always
+RestartSec=10
+Nice=10
+CPUSchedulingPolicy=batch
+
+[Install]
+WantedBy=multi-user.target
